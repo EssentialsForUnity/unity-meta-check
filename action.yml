@@ -1,0 +1,42 @@
+name: Unity Meta Check
+description: Validate Unity .meta file consistency.
+
+inputs:
+  path:
+    description: Repository-relative Unity project path.
+    required: false
+    default: .
+  scopes:
+    description: Comma-separated project-relative roots to scan.
+    required: false
+    default: Assets,Packages
+  ignore-dotfiles:
+    description: Ignore dotfiles and dot-directories.
+    required: false
+    default: "true"
+  ignore-tilde-paths:
+    description: Ignore paths with segments ending in ~, such as Samples~.
+    required: false
+    default: "true"
+  ignore-native-bundle-contents:
+    description: Ignore contents inside native bundle directories.
+    required: false
+    default: "true"
+  fail-on-empty:
+    description: Fail when no files or directories are checked.
+    required: false
+    default: "false"
+
+runs:
+  using: composite
+  steps:
+    - name: Run Unity meta check
+      shell: bash
+      run: |
+        python3 "$GITHUB_ACTION_PATH/scripts/unity-meta-check.py" \
+          --path "${{ inputs.path }}" \
+          --scopes "${{ inputs.scopes }}" \
+          --ignore-dotfiles "${{ inputs.ignore-dotfiles }}" \
+          --ignore-tilde-paths "${{ inputs.ignore-tilde-paths }}" \
+          --ignore-native-bundle-contents "${{ inputs.ignore-native-bundle-contents }}" \
+          --fail-on-empty "${{ inputs.fail-on-empty }}"

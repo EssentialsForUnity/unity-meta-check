@@ -1,0 +1,123 @@
+name: Unity Meta Check
+
+on:
+  workflow_call:
+    inputs:
+      path:
+        description: Repository-relative Unity project path.
+        required: false
+        type: string
+        default: .
+      scopes:
+        description: Comma-separated project-relative roots to scan.
+        required: false
+        type: string
+        default: Assets,Packages
+      ignore-dotfiles:
+        description: Ignore dotfiles and dot-directories.
+        required: false
+        type: boolean
+        default: true
+      ignore-tilde-paths:
+        description: Ignore paths with segments ending in ~, such as Samples~.
+        required: false
+        type: boolean
+        default: true
+      ignore-native-bundle-contents:
+        description: Ignore contents inside native bundle directories.
+        required: false
+        type: boolean
+        default: true
+      fail-on-empty:
+        description: Fail when no files or directories are checked.
+        required: false
+        type: boolean
+        default: false
+      checker-repository:
+        description: Repository containing the checker implementation.
+        required: false
+        type: string
+        default: EssentialsForUnity/unity-meta-check
+      checker-ref:
+        description: Ref to check out for the checker implementation.
+        required: false
+        type: string
+        default: main
+  workflow_dispatch:
+    inputs:
+      path:
+        description: Repository-relative Unity project path.
+        required: false
+        type: string
+        default: .
+      scopes:
+        description: Comma-separated project-relative roots to scan.
+        required: false
+        type: string
+        default: Assets,Packages
+      ignore-dotfiles:
+        description: Ignore dotfiles and dot-directories.
+        required: false
+        type: boolean
+        default: true
+      ignore-tilde-paths:
+        description: Ignore paths with segments ending in ~, such as Samples~.
+        required: false
+        type: boolean
+        default: true
+      ignore-native-bundle-contents:
+        description: Ignore contents inside native bundle directories.
+        required: false
+        type: boolean
+        default: true
+      fail-on-empty:
+        description: Fail when no files or directories are checked.
+        required: false
+        type: boolean
+        default: false
+      checker-repository:
+        description: Repository containing the checker implementation.
+        required: false
+        type: string
+        default: EssentialsForUnity/unity-meta-check
+      checker-ref:
+        description: Ref to check out for the checker implementation.
+        required: false
+        type: string
+        default: main
+
+permissions:
+  contents: read
+
+jobs:
+  meta:
+    name: Check Unity .meta files
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          lfs: false
+          submodules: false
+
+      - name: Checkout checker
+        uses: actions/checkout@v6
+        with:
+          repository: ${{ inputs.checker-repository }}
+          ref: ${{ inputs.checker-ref }}
+          path: .unity-meta-check
+          lfs: false
+          submodules: false
+
+      - name: Run Unity meta check
+        shell: bash
+        run: |
+          python3 .unity-meta-check/scripts/unity-meta-check.py \
+            --path "${{ inputs.path }}" \
+            --scopes "${{ inputs.scopes }}" \
+            --ignore-dotfiles "${{ inputs.ignore-dotfiles }}" \
+            --ignore-tilde-paths "${{ inputs.ignore-tilde-paths }}" \
+            --ignore-native-bundle-contents "${{ inputs.ignore-native-bundle-contents }}" \
+            --fail-on-empty "${{ inputs.fail-on-empty }}"
